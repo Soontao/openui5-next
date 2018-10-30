@@ -1,2 +1,3 @@
-# openui5-next
-Next-generation
+# OpenUI5 Next
+
+Next-generation OpenUI5

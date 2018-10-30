@@ -1,0 +1,15 @@
+{
+  "name": "@ui5next/openui5",
+  "scripts": {
+    "gulp": "gulp build",
+    "build": "babel src -d dist"
+  },
+  "devDependencies": {
+    "babel": "6",
+    "babel-cli": "6",
+    "babel-core": "6",
+    "gulp": "^3.9.1",
+    "gulp-babel": "7",
+    "lodash": "^4.17.11"
+  }
+}
