@@ -2,21 +2,18 @@ var path = require('path');
 var babel = require('gulp-babel');
 var gulp = require("gulp");
 var fs = require("fs")
-var { filter } = require("lodash")
+var { warn } = require("console")
+var { filter, includes } = require("lodash")
 
 var srcRoot = path.join(__dirname, "./src")
-
-var modules = filter(fs.readdirSync(srcRoot), d => !d.startsWith("testsuite"))
+var ignoreModules = ["testsuite", "testsuite-utils", "sap.ui.demokit", "sap.ui.codeeditor"]
+var modules = filter(fs.readdirSync(srcRoot), d => !includes(ignoreModules, d))
 
 gulp.task('build', function () {
-  gulp.series(
-    modules.map(m =>
-      gulp
-        .src(`src/${m}/src/**/*.js`)
-        .pipe(babel())
-        .pipe(gulp.dest("./dist/"))
-    )
-  )
-
-
+  return gulp
+    .src(modules.map(m => `src/${m}/src/**/*.js`))
+    .pipe(babel())
+    .on('error', ({ fileName }) => warn(`WARN ${fileName} convert failed`))
+    .pipe(gulp.dest("./dist/"))
 });
+
