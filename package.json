@@ -1,16 +1,19 @@
 {
   "name": "@ui5next/openui5",
+  "version": "1.58.5",
   "scripts": {
-    "gulp": "gulp build",
-    "build": "babel src -d dist"
+    "build": "gulp build"
   },
   "devDependencies": {
     "babel": "6",
     "babel-cli": "6",
     "babel-core": "6",
-    "gulp": "^3.9.1",
+    "gulp": "4",
     "gulp-babel": "7",
+    "gulp-less": "^4.0.1",
+    "lebab": "^3.0.3",
     "lodash": "^4.17.11",
+    "stream-combiner2": "^1.1.1",
     "through2": "^2.0.3",
     "vinyl": "^2.2.0"
   }

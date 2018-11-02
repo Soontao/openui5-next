@@ -42,10 +42,6 @@ module.default = (babel) => {
     CallExpression: {
       enter: path => {
         var node = path.node;
-        var state = path.state.ui5next;
-        var filepath = path.hub.file.opts.filename;
-        // fix jquery.sap.xxx.js require path
-        var relativePrefix = relative(filepath, getLatestSAPFolderAbsPath(filepath)).replace(/\\/g, "/") || "."
 
         if (
           // is sap.ui.define call expression
@@ -53,6 +49,11 @@ module.default = (babel) => {
           get(node, ["callee", "object", "property", "name"], "") == "ui" &&
           get(node, ["callee", "property", "name"], "") == "define"
         ) {
+
+          var state = path.state.ui5next;
+          var filepath = path.hub.file.opts.filename;
+          // fix jquery.sap.xxx.js require path
+          var relativePrefix = relative(filepath, getLatestSAPFolderAbsPath(filepath)).replace(/\\/g, "/") || "."
           var args = node.arguments;
           var imports = []
           var definationFunction
@@ -76,13 +77,13 @@ module.default = (babel) => {
                 var requireExpressions = []
                 for (let index = 0; index < min([size(imports), size(definationFunctionParams)]); index++) {
                   const id = definationFunctionParams[index];
-                  const module = imports[index]
+                  const mName = imports[index]
                   // if not relative module improt, convert to relative
-                  if (!isRelativeModuleImport(module.value)) {
-                    module.value = `${relativePrefix}/${module.value}`
+                  if (!isRelativeModuleImport(mName.value)) {
+                    mName.value = `${relativePrefix}/${mName.value}`
                   }
                   requireExpressions.push(
-                    t.importDeclaration([t.importDefaultSpecifier(id)], module) // es6 import
+                    t.importDeclaration([t.importDefaultSpecifier(id)], mName) // es6 import
                     // t.variableDeclaration(
                     //   "var", [
 
@@ -100,19 +101,23 @@ module.default = (babel) => {
                 expresions = concat(requireExpressions, expresions)
               }
 
-              var endExpression = expresions.pop();
+              // >> return Module > export default Module
 
-              if (endExpression.type == "ReturnStatement") {
-                endExpression = t.exportDefaultDeclaration(endExpression.argument) // es6 export
-                // endExpression = t.expressionStatement(
-                //   t.assignmentExpression("=",
-                //     t.memberExpression(t.identifier("module"), t.identifier("exports")),
-                //     endExpression.argument
-                //   )
-                // )
+              var rtStatemnets = filter(expresions, { type: "ReturnStatement" })
+
+              var expresions = filter(expresions, e => e.type !== "ReturnStatement")
+
+              if (size(rtStatemnets) > 1) {
+                warn(`file: ${filepath}, have more than one return statements in sap.ui.deinfe, please process it manual.`)
+                return;
               }
 
-              expresions = concat(expresions, endExpression)
+              if (size(rtStatemnets) == 1) {
+                expresions = concat(expresions, t.exportDefaultDeclaration(rtStatemnets[0].argument))
+              }
+
+              // << return Module > export default Module
+
               state.inserts = concat(state.inserts, expresions);
               path.remove();
             } else {

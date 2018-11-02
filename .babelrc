@@ -1,5 +1,5 @@
 {
   "plugins": [
-    "./internal/plugin"
+    "./internal/ui5-module-to-es6-module"
   ]
 }
