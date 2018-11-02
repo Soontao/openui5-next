@@ -3,6 +3,7 @@ var babel = require('gulp-babel');
 var gulp = require("gulp");
 var fs = require("fs")
 var less = require('gulp-less');
+var del = require('del');
 var { filter, includes, concat } = require("lodash")
 
 var srcRoot = path.join(__dirname, "./src")
@@ -14,6 +15,8 @@ var jsModules = filter(modules, d => !includes(ignoreModules, d))
 
 gulp.task("copy:thirdpartylib", () => gulp.src("./src/sap.ui.core/src/sap/ui/thirdparty/**/*").pipe(gulp.dest("./dist/sap/ui/thirdparty/")))
 
+gulp.task("copy:properties", () => gulp.src(modules.map(m => `./src/${m}/src/**/*.properties`)).pipe(gulp.dest("./dist/")))
+
 gulp.task("forward:es6module", () => gulp.src(
   concat(jsModules.map(m => `src/${m}/src/**/*.js`), "!src/sap.ui.core/src/sap/ui/thirdparty/**/*")).pipe(babel()).pipe(gulp.dest("./dist/"))
 )
@@ -23,5 +26,6 @@ gulp.task("less", gulp.series(
   function compileLess() { return gulp.src(concat(themeModules, jsModules).map(m => `./dist/${m.replace(/\./g, "/")}/**/library.source.less`)).pipe(less()).pipe(gulp.dest("./dist/")) }
 ))
 
-gulp.task('build', gulp.parallel("copy:thirdpartylib", "forward:es6module", "less"));
+gulp.task("clean", () => { return del("./dist") })
 
+gulp.task('build', gulp.series("clean", gulp.parallel("copy:thirdpartylib", "forward:es6module", "less")));
