@@ -22,7 +22,7 @@ gulp.task("forward:es6module", () => gulp.src(
 )
 
 gulp.task("less", gulp.series(
-  function copyLess() { return gulp.src(concat(themeModules, jsModules).map(m => `src/${m}/src/**/*.{less,css}`)).pipe(gulp.dest("./dist/")) },
+  function copyLess() { return gulp.src(concat(themeModules, jsModules).map(m => `src/${m}/src/**/*.{less,css,json,woff,ttf,woff2,TTF}`)).pipe(gulp.dest("./dist/")) },
   function compileLess() { return gulp.src(concat(themeModules, jsModules).map(m => `./dist/${m.replace(/\./g, "/")}/**/library.source.less`)).pipe(less()).pipe(gulp.dest("./dist/")) }
 ))
 

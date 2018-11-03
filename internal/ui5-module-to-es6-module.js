@@ -54,16 +54,22 @@ module.default = (babel) => {
           var filepath = path.hub.file.opts.filename;
           // fix jquery.sap.xxx.js require path
           var relativePrefix = relative(filepath, getLatestSAPFolderAbsPath(filepath)).replace(/\\/g, "/") || "."
-          var args = node.arguments;
+          var args = node.arguments || [];
           var imports = []
           var definationFunction
 
-          if (args[0].type == "FunctionExpression") {
-            definationFunction = args[0];
-          } else if (args[0].type == "ArrayExpression") {
-            imports = args[0].elements;
-            definationFunction = args[1];
-          }
+          args.forEach(arg => {
+            switch (arg.type) {
+              case "FunctionExpression":
+                definationFunction = arg
+                break;
+              case "ArrayExpression":
+                imports = arg.elements;
+                break;
+              default:
+                break;
+            }
+          });
 
           if (definationFunction) {
             var definationFunctionParams = definationFunction.params;
