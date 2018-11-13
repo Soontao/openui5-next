@@ -66,3 +66,4 @@ dist
 archive.tar.gz
 archive.zip
 .DS_Store
+openui5*

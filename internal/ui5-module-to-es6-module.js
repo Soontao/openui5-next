@@ -42,9 +42,10 @@ module.default = (babel) => {
     CallExpression: {
       enter: path => {
         var node = path.node;
+        var parentNode = path.parent;
 
+        // is sap.ui.define call expression
         if (
-          // is sap.ui.define call expression
           get(node, ["callee", "object", "object", "name"], "") == "sap" &&
           get(node, ["callee", "object", "property", "name"], "") == "ui" &&
           get(node, ["callee", "property", "name"], "") == "define"
@@ -132,6 +133,46 @@ module.default = (babel) => {
 
           } else {
 
+          }
+        }
+        // is Object.extend class expression
+        if (get(node, ["callee", "property", "name"], "") == "extend") {
+          var superClassName = node.callee.object.name;
+          var className = parentNode.id.name;
+          var args = node.arguments;
+          var replaced = []
+          var body
+          switch (size(args)) {
+            case 1:
+              body = args[0]
+              break;
+            case 2:
+              body = args[1]
+              break;
+            default:
+              warn(`unsupported args size for class ${className}`)
+              break;
+          }
+
+          switch (body.type) {
+            case "ObjectExpression":
+              replaced.push(
+                t.classDeclaration(
+                  t.identifier(className),
+                  t.identifier(superClassName),
+                  t.classBody([])
+                )
+              )
+              break;
+            case "Identifier":
+
+              break;
+            default:
+              warn(`unsupported expression ${body.type}`)
+              break;
+          }
+          if (!isEmpty(replaced)) {
+            path.replaceWithMultiple(replaced)
           }
         }
       }
